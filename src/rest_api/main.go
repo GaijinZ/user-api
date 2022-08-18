@@ -3,7 +3,7 @@ package main
 import (
 	"os"
 
-	"github.com/GaijinZ/user-api/rest_api/setup"
+	"github.com/GaijinZ/user-api/src/rest_api/setup"
 )
 
 func main() {
