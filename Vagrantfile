@@ -5,7 +5,7 @@ $docker = <<-SCRIPT
 
 docker compose -f /vagrant_data/docker-compose.yaml up
 
-# docker build -t docker-go-alpine /vagrant_data/echo_crud
+# docker build -t docker-go-alpine /vagrant_data/user-api
 
 SCRIPT
 
@@ -29,7 +29,7 @@ Vagrant.configure("2") do |config|
 
     dockervm.vm.network "private_network", ip: "192.168.33.2"
 
-    dockervm.vm.synced_folder "../data", "/vagrant_data", create: true
+    dockervm.vm.synced_folder ".", "/vagrant_data", create: true
 
     dockervm.vm.provider "virtualbox" do |vb|
     dockervm.vagrant.plugins = "vagrant-docker-compose"
