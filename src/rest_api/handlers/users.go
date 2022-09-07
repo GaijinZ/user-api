@@ -2,31 +2,26 @@
 //
 // Documentation of our User API
 //
-//     Schemes: http
-//     BasePath: /api/v1/users
-//     Version: 0.0.1
-//     Host: 192.168.33.2:8000
+//	    Schemes: http
+//	    BasePath: /api/:api_version/users
+//	    Version: 0.0.1
+//	    Host: 192.168.33.2:8000
+//		Title: User API
 //
-//     Consumes:
-//     - application/json
+//	    Consumes:
+//	    - application/json
 //
-//     Produces:
-//     - application/json
+//	    Produces:
+//	    - application/json
 //
-//     Security:
-//     - basic
-//
-//    SecurityDefinitions:
-//    basic:
-//      type: basic
+//	    Security:
+//	    - none
 //
 // swagger:meta
-
 package handlers
 
 import (
 	"fmt"
-	"log"
 	"net/http"
 	"strconv"
 
@@ -35,8 +30,12 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-// swagger:route GET /api/v1/users
+// swagger:route POST /api/v1/users user add addUser
 // Adds an user to the database
+//
+//	Responses:
+//	    200: userResponse
+//	    500: errorResponse
 func AddUser(c echo.Context) error {
 	user := model.User{}
 
@@ -44,16 +43,27 @@ func AddUser(c echo.Context) error {
 		return err
 	}
 
-	storage.GetDBInstance().Create(&user)
+	storage.GetDBInstanceGorm().Create(&user)
 	return c.JSON(http.StatusCreated, &user)
 }
 
-// swagger:route GET /api/v1/users/{user_id}
+// swagger:route GET /api/v1/users/:user_id get user getUser
 // Returns a specific user from database by id
+//
+//	Parameters:
+//		+ name: user_id
+//	    in: query
+//		required: true
+//		type: integer
+//		format: int64
+//
+//	Responses:
+//	200: usersResponse
+//	500: errorResponse
 func GetUser(c echo.Context) error {
 	user := model.User{}
 	id, _ := strconv.Atoi(c.Param("id"))
-	err := storage.GetDBInstance().Find(&user, id).Error
+	err := storage.GetDBInstanceGorm().Find(&user, id).Error
 
 	if err != nil {
 		fmt.Println("No user")
@@ -62,8 +72,21 @@ func GetUser(c echo.Context) error {
 	return c.JSON(http.StatusOK, &user)
 }
 
-// swagger:route GET /api/v1/users/{user_id}
+// swagger:route PUT /api/v1/users/:user_id update user updateUser
 // Returns an updated user in database by id
+//
+//	Parameters:
+//	    + name: user_id
+//	    in: query
+//	    required: true
+//	    type: integer
+//	    format: int64
+//
+//	Responses:
+//		200: userResponse
+//		400: errorResponse
+//		404: errorResponse
+//		500: errorResponse
 func UpdateUser(c echo.Context) error {
 	id := c.Param("id")
 	user := model.User{}
@@ -72,7 +95,7 @@ func UpdateUser(c echo.Context) error {
 		return err
 	}
 
-	err := storage.GetDBInstance().Where("id = ?", id).Updates(&user).Error
+	err := storage.GetDBInstanceGorm().Where("id = ?", id).Updates(&user).Error
 
 	if err != nil {
 		fmt.Println("No user")
@@ -81,12 +104,24 @@ func UpdateUser(c echo.Context) error {
 	return c.JSON(http.StatusOK, &user)
 }
 
-// swagger:route GET /api/v1/users/{user_id}
+// swagger:route DELETE /api/v1/users/:user_id delete user deleteUser
 // Delete an user from database by id
+//
+//	Parameters:
+//	    + name: user_id
+//	    in: query
+//	    required: true
+//	    type: integer
+//	    format: int64
+//
+//	Responses:
+//		200: messageResponse
+//		400: errorResponse
+//		404: errorResponse
 func DeleteUser(c echo.Context) error {
 	user := []model.User{}
 	id, _ := strconv.Atoi(c.Param("id"))
-	err := storage.GetDBInstance().Delete(&user, id).Error
+	err := storage.GetDBInstanceGorm().Delete(&user, id).Error
 
 	if err != nil {
 		fmt.Println("Deleted Failed")
@@ -95,13 +130,19 @@ func DeleteUser(c echo.Context) error {
 	return c.NoContent(http.StatusNoContent)
 }
 
+// swagger:route GET /api/v1/users users listOfUsers
+// Returns all users
+//
+//	Responses:
+//		200: usersResponse
+//		500: errorResponse
 func GetUsers(c echo.Context) error {
 	users, _ := GetRepoUsers()
 	return c.JSON(http.StatusOK, &users)
 }
 
 func GetRepoUsers() ([]model.User, error) {
-	db := storage.GetDBInstance()
+	db := storage.GetDBInstanceGorm()
 	users := []model.User{}
 
 	if err := db.Find(&users).Error; err != nil {
@@ -109,20 +150,4 @@ func GetRepoUsers() ([]model.User, error) {
 	}
 
 	return users, nil
-}
-
-func AddUserCassandra(c echo.Context) error {
-
-	user := model.User{}
-
-	if err := c.Bind(&user); err != nil {
-		return err
-	}
-
-	if err := storage.Session.Query("INSERT INTO usersapi.users(id, firstname, lastname, email) VALUES(?, ?, ?, ?)",
-		user.ID, user.Firstname, user.Lastname, user.Email).Exec(); err != nil {
-		log.Fatal(err)
-	}
-
-	return c.JSON(http.StatusCreated, &user)
 }

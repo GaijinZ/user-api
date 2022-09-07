@@ -1,6 +1,6 @@
 package config
 
 func GetPostgresConnectionString() string {
-	database := "host=192.168.33.1 user=userapi password=userapi dbname=userapidb port=8221 sslmode=disable"
+	database := "host=192.168.33.2 user=userapi password=userapi dbname=userapi port=5432 sslmode=disable"
 	return database
 }

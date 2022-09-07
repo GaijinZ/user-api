@@ -5,8 +5,6 @@ $docker = <<-SCRIPT
 
 docker compose -f /vagrant_data/docker-compose.yaml up
 
-# docker build -t docker-go-alpine /vagrant_data/user-api
-
 SCRIPT
 
 # All Vagrant configuration is done below. The "2" in Vagrant.configure
@@ -34,7 +32,7 @@ Vagrant.configure("2") do |config|
     dockervm.vm.provider "virtualbox" do |vb|
     dockervm.vagrant.plugins = "vagrant-docker-compose"
 
-      vb.memory = "3096"
+      vb.memory = "8192"
     end
 
     dockervm.vm.provision :docker_compose

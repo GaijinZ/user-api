@@ -1,0 +1,122 @@
+basePath: /api/:api_version/users
+consumes:
+- application/json
+definitions:
+  User:
+    description: User represents the user for this application
+    properties:
+      email:
+        description: The email address for this user
+        type: string
+        x-go-name: Email
+      firstname:
+        description: The name for this user
+        type: string
+        x-go-name: Firstname
+      id:
+        description: The ID for this user
+        format: int64
+        type: integer
+        x-go-name: ID
+      lastname:
+        description: The lastname for this user
+        type: string
+        x-go-name: Lastname
+    required:
+    - id
+    - firstname
+    - lastname
+    - email
+    type: object
+    x-go-package: github.com/GaijinZ/user-api/src/rest_api/model
+host: 192.168.33.2:8000
+info:
+  description: Documentation of our User API
+  title: of User API
+  version: 0.0.1
+paths:
+  /api/v1/users:
+    get:
+      description: Returns all users
+      operationId: listOfUsers
+      responses:
+        "200":
+          $ref: '#/responses/usersResponse'
+        "500":
+          $ref: '#/responses/errorResponse'
+      tags:
+      - users
+    post:
+      description: Adds an user to the database
+      operationId: addUser
+      responses:
+        "200":
+          $ref: '#/responses/userResponse'
+        "500":
+          $ref: '#/responses/errorResponse'
+      tags:
+      - user
+      - add
+  /api/v1/users/:user_id:
+    delete:
+      description: Delete an user from database by id
+      operationId: deleteUser
+      parameters:
+      - format: int64
+        in: query
+        name: user_id
+        required: true
+        type: integer
+      responses:
+        "200":
+          $ref: '#/responses/messageResponse'
+        "400":
+          $ref: '#/responses/errorResponse'
+        "404":
+          $ref: '#/responses/errorResponse'
+      tags:
+      - delete
+      - user
+    get:
+      description: Returns a specific user from database by id
+      operationId: getUser
+      parameters:
+      - format: int64
+        in: query
+        name: user_id
+        required: true
+        type: integer
+      responses:
+        "200":
+          $ref: '#/responses/usersResponse'
+        "500":
+          $ref: '#/responses/errorResponse'
+      tags:
+      - get
+      - user
+    put:
+      description: Returns an updated user in database by id
+      operationId: updateUser
+      parameters:
+      - format: int64
+        in: query
+        name: user_id
+        required: true
+        type: integer
+      responses:
+        "200":
+          $ref: '#/responses/userResponse'
+        "400":
+          $ref: '#/responses/errorResponse'
+        "404":
+          $ref: '#/responses/errorResponse'
+        "500":
+          $ref: '#/responses/errorResponse'
+      tags:
+      - update
+      - user
+produces:
+- application/json
+schemes:
+- http
+swagger: "2.0"

@@ -29,7 +29,7 @@ func ConnectGorm(params ...string) *gorm.DB {
 	return DB
 }
 
-func GetDBInstance() *gorm.DB {
+func GetDBInstanceGorm() *gorm.DB {
 	return DB
 }
 
@@ -37,7 +37,7 @@ func ConnectCassandra() *gocql.Session {
 	var err error
 
 	cluster := gocql.NewCluster("192.168.33.2")
-	cluster.Keyspace = "usersapi"
+	cluster.Keyspace = "userapi"
 	cluster.Consistency = gocql.Quorum
 	cluster.ConnectTimeout = time.Second * 10
 	Session, err = cluster.CreateSession()
@@ -46,5 +46,19 @@ func ConnectCassandra() *gocql.Session {
 		panic(err)
 	}
 
+	return Session
+}
+
+func Closedatabase(connection *gorm.DB) {
+	sqldb, err := connection.DB()
+
+	if err != nil {
+		log.Fatal("Could not close db cassandra ", err)
+	}
+
+	sqldb.Close()
+}
+
+func GetDBInstanceCass() *gocql.Session {
 	return Session
 }
