@@ -36,10 +36,14 @@ func GetDBInstanceGorm() *gorm.DB {
 func ConnectCassandra() *gocql.Session {
 	var err error
 
-	cluster := gocql.NewCluster("192.168.33.2")
+	cluster := gocql.NewCluster("cassandra")
 	cluster.Keyspace = "userapi"
 	cluster.Consistency = gocql.Quorum
 	cluster.ConnectTimeout = time.Second * 10
+	cluster.Authenticator = gocql.PasswordAuthenticator{
+		Username: "cassandra",
+		Password: "cassandra",
+	}
 	Session, err = cluster.CreateSession()
 
 	if err != nil {

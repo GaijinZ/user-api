@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log"
 
 	"github.com/GaijinZ/user-api/src/redis"
 	"github.com/golang-jwt/jwt/v4"
@@ -30,10 +31,10 @@ func GenerateJWT(email, role string) (string, error) {
 
 func VerifyJWT(auth string, c echo.Context) (interface{}, error) {
 
-	val, err := redis.RedisSetup().Get(context.Background(), auth).Result()
+	val, err := redis.RedisClient.Get(context.Background(), auth).Result()
 
 	if err != nil {
-		fmt.Errorf("Could not get token: %v", err)
+		log.Fatalf("Could not get token: %v", err)
 	}
 
 	keyFunc := func(t *jwt.Token) (interface{}, error) {

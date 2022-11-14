@@ -21,10 +21,10 @@
 package handlers
 
 import (
-	"fmt"
 	"net/http"
 	"strconv"
 
+	"github.com/GaijinZ/user-api/src/kafka/producer"
 	"github.com/GaijinZ/user-api/src/rest_api/model"
 	"github.com/GaijinZ/user-api/src/rest_api/storage"
 	"github.com/labstack/echo/v4"
@@ -37,11 +37,27 @@ import (
 //	    200: userResponse
 //	    500: errorResponse
 func AddUser(c echo.Context) error {
+	var err error
+	var status int
 	user := model.User{}
+	k, msg := "", "userapi"
 
-	if err := c.Bind(&user); err != nil {
+	if err = c.Bind(&user); err != nil {
+		status = http.StatusBadRequest
+		msg += "[" + k + "] SaveUser error: incorrect parameters, HTTP: " + strconv.Itoa(status)
 		return err
 	}
+
+	defer func() {
+		producer.ProduceMessage(k, msg)
+		if err != nil {
+			c.JSON(status, &model.GenericError{Message: msg})
+		}
+	}()
+
+	k = strconv.Itoa(user.ID)
+	status = http.StatusOK
+	msg += "[" + k + "] SaveUser completed: user added, HTTP: " + strconv.Itoa(status)
 
 	storage.GetDBInstanceGorm().Create(&user)
 	return c.JSON(http.StatusCreated, &user)
@@ -62,12 +78,33 @@ func AddUser(c echo.Context) error {
 //	500: errorResponse
 func GetUser(c echo.Context) error {
 	user := model.User{}
-	id, _ := strconv.Atoi(c.Param("id"))
-	err := storage.GetDBInstanceGorm().Find(&user, id).Error
+	k, msg := "all", "userapi"
+	var status int
 
+	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
-		fmt.Println("No user")
+		k = "unknown"
+		status = http.StatusBadRequest
+		msg += "[" + k + "] GetUserById error: incorrect id, HTTP: " + strconv.Itoa(status)
+		return err
 	}
+
+	err = storage.GetDBInstanceGorm().Find(&user, id).Error
+	if err != nil {
+		status = http.StatusNotFound
+		msg += "[" + k + "] GetUserById error: couldn't get user, HTTP: " + strconv.Itoa(status)
+		return err
+	}
+
+	defer func() {
+		producer.ProduceMessage(k, msg)
+		if err != nil {
+			c.JSON(status, &model.GenericError{Message: msg})
+		}
+	}()
+
+	status = http.StatusOK
+	msg += "[" + k + "] GetUserById completed: user read, HTTP: " + strconv.Itoa(status)
 
 	return c.JSON(http.StatusOK, &user)
 }
@@ -88,18 +125,33 @@ func GetUser(c echo.Context) error {
 //		404: errorResponse
 //		500: errorResponse
 func UpdateUser(c echo.Context) error {
-	id := c.Param("id")
+	id, err := strconv.Atoi(c.Param("id"))
 	user := model.User{}
+	k, msg := "all", "userapi"
+	var status int
 
 	if err := c.Bind(&user); err != nil {
+		status = http.StatusBadRequest
+		msg += "[" + k + "] UpdateUser error: incorrect parameters, HTTP: " + strconv.Itoa(status)
 		return err
 	}
 
-	err := storage.GetDBInstanceGorm().Where("id = ?", id).Updates(&user).Error
-
+	err = storage.GetDBInstanceGorm().Where("id = ?", id).Updates(&user).Error
 	if err != nil {
-		fmt.Println("No user")
+		status = http.StatusNotFound
+		msg += "[" + k + "] UpdateUser error: user doesn't exist, HTTP: " + strconv.Itoa(status)
+		return err
 	}
+
+	defer func() {
+		producer.ProduceMessage(k, msg)
+		if err != nil {
+			c.JSON(status, &model.GenericError{Message: msg})
+		}
+	}()
+
+	status = http.StatusOK
+	msg += "[" + k + "] UpdateUser completed: user updated, HTTP: " + strconv.Itoa(status)
 
 	return c.JSON(http.StatusOK, &user)
 }
@@ -120,12 +172,30 @@ func UpdateUser(c echo.Context) error {
 //		404: errorResponse
 func DeleteUser(c echo.Context) error {
 	user := []model.User{}
-	id, _ := strconv.Atoi(c.Param("id"))
-	err := storage.GetDBInstanceGorm().Delete(&user, id).Error
+	k, msg := "", "userapi"
+	var status int
 
+	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
-		fmt.Println("Deleted Failed")
+		k = "unknown"
+		status = http.StatusBadRequest
+		msg += "[" + k + "] DeleteUser error: incorrect id, HTTP: " + strconv.Itoa(status)
+		return err
 	}
+
+	err = storage.GetDBInstanceGorm().Delete(&user, id).Error
+	if err != nil {
+		status = http.StatusNotFound
+		msg += "[" + k + "] DeleteUser error: user doesn't exist, HTTP: " + strconv.Itoa(status)
+		return err
+	}
+
+	defer func() {
+		producer.ProduceMessage(k, msg)
+	}()
+
+	status = http.StatusOK
+	msg += "[" + k + "] DeleteUser completed: user deleted, HTTP: " + strconv.Itoa(status)
 
 	return c.NoContent(http.StatusNoContent)
 }
@@ -137,7 +207,22 @@ func DeleteUser(c echo.Context) error {
 //		200: usersResponse
 //		500: errorResponse
 func GetUsers(c echo.Context) error {
-	users, _ := GetRepoUsers()
+	k, msg := "all", "userapi_v2.users"
+	var status int
+
+	users, err := GetRepoUsers()
+	if err != nil {
+		status = http.StatusNotFound
+		msg += "[" + k + "] GetUsers error: couldn't get users, HTTP: " + strconv.Itoa(status)
+		return err
+	}
+
+	defer func() {
+		producer.ProduceMessage(k, msg)
+	}()
+
+	status = http.StatusOK
+	msg += "[" + k + "] GetUsers completed: users read, HTTP: " + strconv.Itoa(status)
 	return c.JSON(http.StatusOK, &users)
 }
 

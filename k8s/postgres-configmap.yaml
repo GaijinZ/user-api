@@ -1,0 +1,7 @@
+# define default database user, name, and password for PostgreSQL deployment
+auth:
+  enablePostgresUser: true
+  postgresPassword: "userapi"
+  username: "userapi"
+  password: "userapi"
+  database: "userapi"

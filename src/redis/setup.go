@@ -4,13 +4,13 @@ import (
 	"github.com/go-redis/redis/v8"
 )
 
-func RedisSetup() *redis.Client {
+var RedisClient *redis.Client
 
-	client := redis.NewClient(&redis.Options{
-		Addr:     "192.168.33.2:6379",
+func RedisSetup() {
+
+	RedisClient = redis.NewClient(&redis.Options{
+		Addr:     "redis",
 		Password: "", // no password set
 		DB:       0,  // use default DB
 	})
-
-	return client
 }

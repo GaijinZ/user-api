@@ -31,6 +31,14 @@ type User struct {
 	Role string `json:"role" form:"role"`
 }
 
+// swagger:model GenericError
+type GenericError struct {
+	// Response message
+	// in: string
+	// required: true
+	Message string `json:"message"`
+}
+
 type Authentication struct {
 	Email    string `json:"email" form:"email"`
 	Password string `json:"password" form:"password"`

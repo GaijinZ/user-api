@@ -1,0 +1,8 @@
+autoCreateTopicsEnable: true
+defaultReplicationFactor: 3
+numPartitions: 3
+replicaCount: 3
+
+persistance:
+  enabled: true
+  mountPath: "/bitnami/kafka"

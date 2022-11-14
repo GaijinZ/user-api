@@ -36,7 +36,7 @@ func Setup(port string) {
 	group.GET("/v1/users/:id", handlers.GetUser)
 	group.GET("/v1/users", handlers.GetUsers)
 	group.PUT("/v1/users/:id", handlers.UpdateUser)
-	group.DELETE("/v1/users/:id", handlers.DeleteUser)
+	group.DELETE("/v1/users/:id", handlers.DeleteUser, authentication.IsAdmin)
 
 	e.Logger.Fatal(e.Start(fmt.Sprintf(":%v", port)))
 }

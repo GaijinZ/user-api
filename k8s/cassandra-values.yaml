@@ -1,0 +1,8 @@
+dbUser:
+  user: "userapi"
+  password: "userapi"
+cluster:
+  name: "userapi"
+jvm:
+  maxHeapSize: 1G
+  newHeapSize: 800M
